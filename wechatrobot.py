@@ -4,6 +4,7 @@
 
 import time
 import re
+import random
 import urllib
 # import chardet
 import urllib2
@@ -43,10 +44,15 @@ $("#panelBody-6 div:last-child >.chat_nick").innerHTML
 def send_message(driver, lastnum):
     # 检查一次群友说的话。如果没人说话，就说。好无聊。
     # jsstr = 'var buddy = document.getElementsByClassName("chat_content_group"); return buddy.length;'
-    jsstr = 'var buddy = document.getElementsByClassName("buddy"); return buddy.length;'
+    # jsstr = 'var buddy = document.getElementsByClassName("plain"); return buddy.length;'
+    # 判断是否群友说话。如果有则执行一次。这里还需要判断是否是文本，表情的不算。
+    jsstr = 'var buddy = document.getElementsByClassName("you"); return buddy.length;'
+
+
+
     rs = driver.execute_script(jsstr)
     # 如果为0或者数量和原来相等。没人说话。发一个好闷。来个人陪我聊天。
-    if rs == 0 or rs == lastnum:
+    if rs <= lastnum:
         pass
         # 发送一条消息。
         # driver.find_element_by_id("chat_textarea").send_keys(u"哎呀，好无聊，谁来陪我聊聊天，我可以模仿你说话。")
@@ -56,11 +62,41 @@ def send_message(driver, lastnum):
 
     else:
         # 读取最后一个人的信息。并重复一次。
-        currentmsg = driver.execute_script('var buddys = document.getElementsByClassName("buddy");var last = buddys[buddys.length-1];return last.children[2].innerHTML;')
+        # currentmsg = driver.execute_script('var plains = document.getElementsByClassName("plain"); var lastplain = plains[plains.length - 1];  return lastplain.children[0].innerHTML; ')
+        currentmsg = driver.execute_script('var plains = document.getElementsByClassName("js_message_plain"); var lastplain = plains[plains.length - 1];  return lastplain.innerHTML; ')
         # currentmsg = driver.execute_script(
         #     'var buddys = document.getElementsByClassName("chat_content_group");var last = buddys[buddys.length-1];return last.children[2].innerHTML;')
 
         print(currentmsg)
+
+        # 如果是表情。则重复该表情。并结束方法.不等于-1表示找到了
+        # 去掉对图片的处理。
+        if False:
+        # if currentmsg.find("img") != -1:
+            print(u"发现表情")
+
+            # 点击表情
+            # driver.execute_script('$("#tool_bar a:first-child").click();')
+            # driver.execute_script('$("html body.ng-scope.ng-isolate-scope.loaded div.main div.main_inner div.ng-scope div#chatArea.box.chat.ng-scope div.box_ft.ng-scope div#tool_bar.toolbar a.web_wechat_face").click();')
+
+            # 产生随机表情。1-100之间
+            # a = random.randint(1, 101)
+            #产生
+            # facestr = '$(".qqface%d").click();' % a
+
+            # driver.execute_script(facestr)
+
+
+            # driver.execute_script('$("html body.ng-scope.ng-isolate-scope.loaded div.main div.main_inner div.ng-scope div#chatArea.box.chat.ng-scope div.box_ft.ng-scope div#tool_bar.toolbar a.web_wechat_face").click();')
+
+
+            # time.sleep(2)
+            driver.find_element_by_id("editArea").send_keys(u"不好意思，表情我还无法识别")
+            time.sleep(2)
+            driver.find_element_by_link_text("发送").click()
+            return rs
+
+
 
         # temp = u"s2f程序员杂志一2d3程序员杂志二2d3程序员杂志三2d3程序员杂志四2d3"
         xx = u'[\u4e00-\u9fa5]'
@@ -68,9 +104,12 @@ def send_message(driver, lastnum):
         pattern = re.compile(xx)
         results = pattern.findall(currentmsg)
         newcurrentmsg = "".join(results)
+
+
+
         # for result in results :
         #     newcurrentmsg = newcurrentmsg
-        print(newcurrentmsg)
+        # print(u"最后的字符串:%s" % newcurrentmsg)
 
 
 
@@ -107,9 +146,9 @@ def send_message(driver, lastnum):
             sendinfo = u"聊点其他的吧。看不懂你们说的啥"
 
 
-        driver.find_element_by_id("chat_textarea").send_keys(sendinfo)
+        driver.find_element_by_id("editArea").send_keys(sendinfo)
         time.sleep(2)
-        driver.find_element_by_id("send_chat_btn").click()
+        driver.find_element_by_link_text("发送").click()
 
     return rs
 
@@ -217,7 +256,7 @@ if __name__ == '__main__':
     # print(s)
     # exit()
 
-    url = "http://w.qq.com/"
+    url = "http://wx.qq.com/"
 
     # driver = webdriver.Firefox()
     driver = webdriver.Chrome()
@@ -228,7 +267,7 @@ if __name__ == '__main__':
     # 等待登录。
     while True:
         #    安全登录防止盗号 如果存在这个，说明没有登录。
-        jsstr = 'if(document.body.innerHTML.indexOf("联系人")>0 ){return 1;}else{return 2;}';
+        jsstr = 'if(document.body.innerHTML.indexOf("搜索")>0 ){return 1;}else{return 2;}';
         rs = driver.execute_script(jsstr)
         if rs == 1:
             # 登录了
@@ -237,22 +276,36 @@ if __name__ == '__main__':
             # 没有登录
             pass
 
-    # 这里肯定登录了。去点击联系人。
-    driver.find_element_by_id("contact").click()
-    time.sleep(5)
-    # 点击搜索
-    driver.find_element_by_id("panelRightButton-2").click()
     time.sleep(2)
-    # 填写内容。查找吴文付直播群友
-    # driver.find_element_by_id("searchInput").send_keys(u"吴文付直播")
-    # driver.find_element_by_id("searchInput").send_keys(u"艾泽拉斯魔兽")
-    driver.find_element_by_id("searchInput").send_keys(u"技术部")
-    time.sleep(5)
-    # 选择第一个
-    # driver.execute_script('$("#search_result_list li:first-child").click()')
+    lastnum = 0 #发送信息之前的小心数。
 
-    driver.execute_script('document.getElementById("search_result_list").children[0].click()')
-    time.sleep(1)
+    while True:
+        # 判断是否存在聊天的窗口。要打开聊天的窗口，很困难。这里是手动
+        # 12:33:00.333 $(".title_name")[0].innerHTML
+        jsstr = 'return  $(".title_name")[0].innerHTML;'
+        rs = driver.execute_script(jsstr)
+        # 如果不为空.则表示有聊天的窗口。
+
+
+        if rs != "" :
+            # 发送一条消息。
+            lastnum = send_message(driver, lastnum)
+
+            # driver.find_element_by_id("editArea").send_keys(u"你好")
+            # time.sleep(2)
+            # driver.find_element_by_link_text("发送").click()
+
+            pass
+        else:
+            # 没有聊天窗口。
+            time.sleep(3)
+
+            pass
+
+
+
+
+
     # 发送一条消息。
     driver.find_element_by_id("chat_textarea").send_keys(u"你好")
     time.sleep(2)
