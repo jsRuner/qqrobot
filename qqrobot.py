@@ -8,6 +8,7 @@ import urllib
 # import chardet
 import urllib2
 import json
+import random
 import logging
 import ConfigParser
 from selenium import webdriver
@@ -57,6 +58,7 @@ def send_message(driver, lastnum):
     if rs == 0 or rs == lastnum:
         pass
         # 发送一条消息。
+            
         # driver.find_element_by_id("chat_textarea").send_keys(u"哎呀，好无聊，谁来陪我聊聊天，我可以模仿你说话。")
         #
         # time.sleep(2)
@@ -80,8 +82,8 @@ def send_message(driver, lastnum):
             driver.find_element_by_id("send_chat_btn").click()
             ISCLOSE = False
 
-        print(currentmsg2 == "end")
-        print(currentmsg2 == "start")
+        # print(currentmsg2 == "end")
+        # print(currentmsg2 == "start")
 
         if ISCLOSE:
             print(u"机器人处于关闭状态...")
@@ -91,7 +93,7 @@ def send_message(driver, lastnum):
         # currentmsg = driver.execute_script(
         #     'var buddys = document.getElementsByClassName("chat_content_group");var last = buddys[buddys.length-1];return last.children[2].innerHTML;')
 
-        print(currentmsg)
+        # print(currentmsg)
 
         # temp = u"s2f程序员杂志一2d3程序员杂志二2d3程序员杂志三2d3程序员杂志四2d3"
         xx = u'[\u4e00-\u9fa5]'
@@ -101,7 +103,7 @@ def send_message(driver, lastnum):
         newcurrentmsg = "".join(results)
         # for result in results :
         #     newcurrentmsg = newcurrentmsg
-        print(newcurrentmsg)
+        print(u"接受到消息:%s" % newcurrentmsg)
 
 
 
@@ -126,18 +128,30 @@ def send_message(driver, lastnum):
 
         tuling = json.loads(s)
         sendinfo = ''
-        print(u'返回的code是%s' % tuling['code'])
-        print(u'与100000是%s' % tuling['code'] == 100000)
-        print(u'与100000字符串是%s' % tuling['code'] == '100000')
-        print(u'与200000%s' % tuling['code'] == 200000)
-        print(u'与200000 字符串%s' % tuling['code'] == '200000')
+        # print(u'返回的code是%s' % tuling['code'])
+        # print(u'与100000是%s' % tuling['code'] == 100000)
+        # print(u'与100000字符串是%s' % tuling['code'] == '100000')
+        # print(u'与200000%s' % tuling['code'] == 200000)
+        # print(u'与200000 字符串%s' % tuling['code'] == '200000')
 
         if tuling['code'] == 100000:
-            print(u"%s" % tuling['text'])
+            # print(u"%s" % tuling['text'])
             sendinfo = u"%s" % tuling['text']
         elif tuling['code'] == 200000:
-            print(u"%s" % tuling['text'])
+            # print(u"%s" % tuling['text'])
             sendinfo = u"%s链接%s" % (tuling['text'], tuling['url'])
+        elif tuling['code'] == 302000:
+            # print(u"%s" % tuling['text'])
+            sendinfo = u"%s:" % (tuling['text'])
+            # 新闻list  只读取一部分。3条即可。
+            newsnum = 0
+            for item in tuling['list']:
+                if newsnum >=3:
+                    break
+                newsnum = newsnum+1
+                sendinfo = sendinfo+u"%s:%s" % (item['article'],item['detailurl'])
+
+            pass
         else:
             # print(u"聊点其他的吧。看不懂你们说的啥")
             sendinfo = u"聊点其他的吧。看不懂你们说的啥"
@@ -195,7 +209,11 @@ class Main():
 
 
 if __name__ == '__main__':
-
+    readme = u"######################################################################\r\n" \
+             u"本软件可以实现与QQ好友或者QQ群自动聊天。" \
+             u"需要注意，需要用手机扫描登录和选取你想要聊天的对象,如果无法收到消息，可以刷新页面，重新选择" \
+             u"\r\n#####################################################################"
+    print(readme)
 
 
 
@@ -259,10 +277,14 @@ if __name__ == '__main__':
         # print(s)
         # exit()
 
-    url = "http://w.qq.com/"  # driver = webdriver.Firefox()
+    url = "http://w.qq.com/"
+    # driver = webdriver.Firefox()
+    # driver = webdriver.Ie()
     driver = webdriver.Chrome()
 
     driver.get(url)
+
+    print(u"等待用户扫描二维码。。。")
 
     # 等待登录。
     while True:
@@ -271,31 +293,28 @@ if __name__ == '__main__':
         rs = driver.execute_script(jsstr)
         if rs == 1:
             # 登录了
+            print(u"扫描成功")
             break
         else:
             # 没有登录
             pass
 
-    # 这里肯定登录了。去点击联系人。
-    driver.find_element_by_id("contact").click()
-    time.sleep(5)
-    # 点击搜索
-    driver.find_element_by_id("panelRightButton-2").click()
-    time.sleep(2)
-    # 填写内容。查找吴文付直播群友
-    driver.find_element_by_id("searchInput").send_keys(u"吴文付直播")
-    # driver.find_element_by_id("searchInput").send_keys(u"艾泽拉斯魔兽")
-    # driver.find_element_by_id("searchInput").send_keys(u"技术部")
-    time.sleep(5)
-    # 选择第一个
-    # driver.execute_script('$("#search_result_list li:first-child").click()')
+    # 等待选取群。
+    print(u"等待选取聊天对象")
+    jsstr = "if(document.getElementById('panelTitle-5') != null ) {return document.getElementById('panelTitle-5').innerHTML;}else{return 2;}"
+    while True:
+        rs = driver.execute_script(jsstr)
+        if rs ==2:
+            # 没有选择了对话框
+            time.sleep(3)
+            pass
+        else:
+            # 选择对话框
+            break
 
-    driver.execute_script('document.getElementById("search_result_list").children[0].click()')
-    time.sleep(1)
-    # 发送一条消息。
-    driver.find_element_by_id("chat_textarea").send_keys(u"你好")
-    time.sleep(2)
-    driver.find_element_by_id("send_chat_btn").click()
+    #选择了对话框。
+    print(u"你选择的聊天对象是:%s" % rs)
+
 
     lastnum = 0
     # 先获取是否有网页的内容。如果有。则重复一次。如果没有，则随机说一句话。
