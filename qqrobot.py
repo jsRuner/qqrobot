@@ -19,7 +19,7 @@ from selenium.webdriver.support import expected_conditions as EC  # available si
 """
 @version: 1.0
 @author: hiphp
-@license: Apache Licence 
+@license: Apache Licence
 @contact: hi_php@163.com
 @site: wuwenfu.cn
 @software: PyCharm Community Edition
@@ -30,17 +30,25 @@ $("#panelBody-6 div:last-child >.chat_nick").innerHTML
 
 
 
+
+
 """
-
-
 #
 # 为了避免问题。这里读取信息，当前是只读取最后一条信息。
 #
 # 一次读取多条信息。取最后3条进行回复。
+# 添加开启与关闭的操作。
+#
+# 不定时进行一次笑话或者新闻播放
 #
 #
 
+ISCLOSE = False;
+
+
 def send_message(driver, lastnum):
+    global ISCLOSE
+
     # 检查一次群友说的话。如果没人说话，就说。好无聊。
     # jsstr = 'var buddy = document.getElementsByClassName("chat_content_group"); return buddy.length;'
     jsstr = 'var buddy = document.getElementsByClassName("buddy"); return buddy.length;'
@@ -56,7 +64,30 @@ def send_message(driver, lastnum):
 
     else:
         # 读取最后一个人的信息。并重复一次。
-        currentmsg = driver.execute_script('var buddys = document.getElementsByClassName("buddy");var last = buddys[buddys.length-1];return last.children[2].innerHTML;')
+        currentmsg = driver.execute_script(
+            'var buddys = document.getElementsByClassName("buddy");var last = buddys[buddys.length-1];return last.children[2].innerHTML;')
+        currentmsg2 = driver.execute_script(
+            'var buddys = document.getElementsByClassName("chat_content_group");var last = buddys[buddys.length-1];return last.children[2].innerHTML;')
+
+        if currentmsg2 == "end":
+            ISCLOSE = True
+            driver.find_element_by_id("chat_textarea").send_keys(u"我要去睡觉了。需要我的话，输入start即可。")
+            time.sleep(2)
+            driver.find_element_by_id("send_chat_btn").click()
+        if currentmsg2 == "start":
+            driver.find_element_by_id("chat_textarea").send_keys(u"我醒了，谢谢你唤醒我，我要嫁给你。觉得我烦，可以输入end")
+            time.sleep(2)
+            driver.find_element_by_id("send_chat_btn").click()
+            ISCLOSE = False
+
+        print(currentmsg2 == "end")
+        print(currentmsg2 == "start")
+
+        if ISCLOSE:
+            print(u"机器人处于关闭状态...")
+            return lastnum
+
+
         # currentmsg = driver.execute_script(
         #     'var buddys = document.getElementsByClassName("chat_content_group");var last = buddys[buddys.length-1];return last.children[2].innerHTML;')
 
@@ -71,6 +102,11 @@ def send_message(driver, lastnum):
         # for result in results :
         #     newcurrentmsg = newcurrentmsg
         print(newcurrentmsg)
+
+
+
+
+
 
 
 
@@ -91,21 +127,20 @@ def send_message(driver, lastnum):
         tuling = json.loads(s)
         sendinfo = ''
         print(u'返回的code是%s' % tuling['code'])
-        print(u'与100000是%s' % tuling['code']== 100000)
-        print(u'与100000字符串是%s' % tuling['code']== '100000')
+        print(u'与100000是%s' % tuling['code'] == 100000)
+        print(u'与100000字符串是%s' % tuling['code'] == '100000')
         print(u'与200000%s' % tuling['code'] == 200000)
-        print(u'与200000 字符串%s' % tuling['code'] =='200000')
+        print(u'与200000 字符串%s' % tuling['code'] == '200000')
 
         if tuling['code'] == 100000:
             print(u"%s" % tuling['text'])
             sendinfo = u"%s" % tuling['text']
         elif tuling['code'] == 200000:
             print(u"%s" % tuling['text'])
-            sendinfo = u"%s链接%s" % (tuling['text'],tuling['url'])
+            sendinfo = u"%s链接%s" % (tuling['text'], tuling['url'])
         else:
             # print(u"聊点其他的吧。看不懂你们说的啥")
             sendinfo = u"聊点其他的吧。看不懂你们说的啥"
-
 
         driver.find_element_by_id("chat_textarea").send_keys(sendinfo)
         time.sleep(2)
@@ -161,67 +196,71 @@ class Main():
 
 if __name__ == '__main__':
 
-    # 读取词库
-    # 存储到内存。
-    # 匹配以后，进行回复。
 
 
 
-    # temp = u"s2f程序员杂志一2d3程序员杂志二2d3程序员杂志三2d3程序员杂志四2d3"
-    # xx=u'[\u4e00-\u9fa5]'
-    # print(xx)
-    # pattern = re.compile(xx)
-    # results = pattern.findall(temp)
-    # for result in results :
-    #     print result
-    # exit()
-    #
-    # currentmsg = u"北京今天天气" #不加u可以执行。加u报错。加u是转unicode。原本是\xxx 加u后编程了 \ukjfd
-    # currentmsg = currentmsg
-    #
-    # # 2016年1月11日 这里传递出现问题。中文无法被正常解析。
-    # print(currentmsg)
-    # d = {'key':'131c04727a5deef01c1146b76fac51c5','info':currentmsg.encode('utf-8')}
-    #
-    # print(d)
-    #
-    # print("http://www.tuling123.com/openapi/api?"+urllib.urlencode(d))
-    # # 发送一次请求。获取图灵的回复。
-    # f=urllib.urlopen("http://www.tuling123.com/openapi/api?"+urllib.urlencode(d))
-    # s=f.read()
-    # tuling = json.loads(s)
-    #
-    # print(u"%s" % tuling['text'])
-    # exit()
+        # newcurrentmsg = "关闭机器人"
+        # print( newcurrentmsg == "关闭机器人")
+        # exit()
 
-    # f=urllib.urlopen("http://www.tuling123.com/openapi/api?key=131c04727a5deef01c1146b76fac51c5&info=笑话")
-    # s=f.read()
-    #
-    # tuling = json.loads(s)
-    #
-    # # 文字类
-    # if tuling['code'] == 100000:
-    #     print(u"%s" % tuling['text'])
-    #     exit()
-    # #链接类
-    # if tuling['code'] == 200000:
-    #     print(u"%s,具体链接是%s" % (tuling['text'],tuling['url']))
-    #     exit()
-    #
-    #
-    #
-    # print(s)
+        # 读取词库
+        # 存储到内存。
+        # 匹配以后，进行回复。
 
-    # f=urllib.urlopen("http://www.tuling123.com/openapi/api?key=131c04727a5deef01c1146b76fac51c5&info=%s" % cu)
-    # s=f.read()
-    # print(s)
-    # exit()
 
-    url = "http://w.qq.com/"
 
-    # driver = webdriver.Firefox()
+        # temp = u"s2f程序员杂志一2d3程序员杂志二2d3程序员杂志三2d3程序员杂志四2d3"
+        # xx=u'[\u4e00-\u9fa5]'
+        # print(xx)
+        # pattern = re.compile(xx)
+        # results = pattern.findall(temp)
+        # for result in results :
+        #     print result
+        # exit()
+        #
+        # currentmsg = u"北京今天天气" #不加u可以执行。加u报错。加u是转unicode。原本是\xxx 加u后编程了 \ukjfd
+        # currentmsg = currentmsg
+        #
+        # # 2016年1月11日 这里传递出现问题。中文无法被正常解析。
+        # print(currentmsg)
+        # d = {'key':'131c04727a5deef01c1146b76fac51c5','info':currentmsg.encode('utf-8')}
+        #
+        # print(d)
+        #
+        # print("http://www.tuling123.com/openapi/api?"+urllib.urlencode(d))
+        # # 发送一次请求。获取图灵的回复。
+        # f=urllib.urlopen("http://www.tuling123.com/openapi/api?"+urllib.urlencode(d))
+        # s=f.read()
+        # tuling = json.loads(s)
+        #
+        # print(u"%s" % tuling['text'])
+        # exit()
+
+        # f=urllib.urlopen("http://www.tuling123.com/openapi/api?key=131c04727a5deef01c1146b76fac51c5&info=笑话")
+        # s=f.read()
+        #
+        # tuling = json.loads(s)
+        #
+        # # 文字类
+        # if tuling['code'] == 100000:
+        #     print(u"%s" % tuling['text'])
+        #     exit()
+        # #链接类
+        # if tuling['code'] == 200000:
+        #     print(u"%s,具体链接是%s" % (tuling['text'],tuling['url']))
+        #     exit()
+        #
+        #
+        #
+        # print(s)
+
+        # f=urllib.urlopen("http://www.tuling123.com/openapi/api?key=131c04727a5deef01c1146b76fac51c5&info=%s" % cu)
+        # s=f.read()
+        # print(s)
+        # exit()
+
+    url = "http://w.qq.com/"  # driver = webdriver.Firefox()
     driver = webdriver.Chrome()
-
 
     driver.get(url)
 
@@ -244,9 +283,9 @@ if __name__ == '__main__':
     driver.find_element_by_id("panelRightButton-2").click()
     time.sleep(2)
     # 填写内容。查找吴文付直播群友
-    # driver.find_element_by_id("searchInput").send_keys(u"吴文付直播")
+    driver.find_element_by_id("searchInput").send_keys(u"吴文付直播")
     # driver.find_element_by_id("searchInput").send_keys(u"艾泽拉斯魔兽")
-    driver.find_element_by_id("searchInput").send_keys(u"技术部")
+    # driver.find_element_by_id("searchInput").send_keys(u"技术部")
     time.sleep(5)
     # 选择第一个
     # driver.execute_script('$("#search_result_list li:first-child").click()')
@@ -257,7 +296,6 @@ if __name__ == '__main__':
     driver.find_element_by_id("chat_textarea").send_keys(u"你好")
     time.sleep(2)
     driver.find_element_by_id("send_chat_btn").click()
-
 
     lastnum = 0
     # 先获取是否有网页的内容。如果有。则重复一次。如果没有，则随机说一句话。
