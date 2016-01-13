@@ -213,21 +213,21 @@ def lol(sn,pn):
         content = f.read()
         print(u'发送请求成功')
         if content:
-            print(content)
+            # print(content)
             # 提取等级 战斗力 被赞 被拉黑。
             # pattern = re.compile('<em><span title=.*?>(.*?)</span></em>');
             pattern = re.compile('<div class="intro">.*?<em>(.*?)</em>.*?<div title.*?>(.*?)</div>.*?<div title.*?>(.*?)</div>.*?<em><span title=.*?>(.*?)</span></em>.*?</div>',re.S);
             result = re.findall(pattern,content)
-            print(result)
+            # print(result)
             if result:
-                print(result[0])
-                for item in result[0]:
-                    print(item)
+                # print(result[0])
+                # for item in result[0]:
+                    # print(item)
                     #filter(str.isdigit, '123ab45')
                 # msg = "%s(%s)英雄联盟信息:等级%s,战斗力%s,被赞次数%s,被拉黑%s" % (pn,sn,result[0][0],result[0][3],filter(str.isdigit,result[0][1]),filter(str.isdigit,result[0][2]))
                 msg = "%s(%s)英雄联盟信息:等级%s,战斗力%s,被赞次数%s,被拉黑%s" % (pn,sn,result[0][0],result[0][3],filter(str.isdigit,result[0][1]),filter(str.isdigit,result[0][2]))
-                print(msg)
-                print(u"查询的结果")
+                # print(msg)
+                # print(u"查询的结果")
         return u"查询的结果 "+  msg.decode("utf-8")
     except Exception, e:
         print(e)
@@ -248,14 +248,14 @@ def lollist(pn):
             pattern = re.compile('<td.*>.*?<td >(.*?)</td>.*?<td >(.*?)</td>.*?</tr>',re.S);
             result = re.findall(pattern,content)
             if result:
-                print(result[0])
+                # print(result[0])
                 # exit()
                 lolliststr = ""
                 for item in result[0]:
-                    print(item)
+                    # print(item)
                     lolliststr = lolliststr + "【"+item+"】"
                 msg = "找到"+str(len(result[0]))+"条记录:" + lolliststr
-                print(msg)
+                # print(msg)
         return u"查询的结果:" + msg.decode("utf-8")
     except Exception, e:
         print(e)
@@ -397,19 +397,14 @@ class Main():
 
 if __name__ == '__main__':
 
-    # msg = fanyi('en','zh',"中国")
-    # print(msg)
 
-    msg = "皮城警备#hiphp"
-    msginfo = msg.split("#")
-    msg = lol(msginfo[0],msginfo[1])
-    print(msg)
 
-    # msg = "hiphp"
-    # msg = lollist(msg)
-    # print(msg)
-
-    print('本程序的查询结果可能会引起一些心理上的不适,请小心使用...')
+    print('吴文付机器人。\r\n功能表:- 翻译功能：中英、英中 例如 中英你好\
+            \r\n- 查询lol战绩：lollist是查大区 例如lollisthiphp  lol皮城警备#hiphp 则是查具体信息 \
+            \r\n- 开启与关闭: 启动机器人，关闭机器人\
+            \r\n- 查询天气：合肥天气\
+            \r\n- 随机聊天：例如笑话\
+            ')
     print('回车键继续...')
     try:
         raw_input()
