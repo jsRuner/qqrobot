@@ -58,7 +58,7 @@ def send_message(driver, lastnum):
     if rs == 0 or rs == lastnum:
         pass
         # 发送一条消息。
-            
+
         # driver.find_element_by_id("chat_textarea").send_keys(u"哎呀，好无聊，谁来陪我聊聊天，我可以模仿你说话。")
         #
         # time.sleep(2)
@@ -164,6 +164,23 @@ def send_message(driver, lastnum):
 
     pass
 
+# 中文转英文。
+def zh2en(msg):
+    url = 'http://apis.baidu.com/apistore/tranlateservice/translate?query=I+am+chinese%2C+and+you%3F&from=en&to=zh'
+
+
+    req = urllib2.Request(url)
+
+    req.add_header("apikey", "b5d6bd8453559da98d0d0ebf87622d8a")
+
+    resp = urllib2.urlopen(req)
+    content = resp.read()
+    if(content):
+        print(content)
+    #     json 数据格式化。
+
+
+    pass
 
 def func():
     pass
@@ -209,6 +226,10 @@ class Main():
 
 
 if __name__ == '__main__':
+
+    # 翻译。约定的格式是翻译xxx
+
+
     readme = u"######################################################################\r\n" \
              u"本软件可以实现与QQ好友或者QQ群自动聊天。" \
              u"需要注意，需要用手机扫描登录和选取你想要聊天的对象,如果无法收到消息，可以刷新页面，重新选择" \
