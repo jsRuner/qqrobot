@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-# encoding: utf-8
-
+# -*- coding: utf-8 -*-
 import time
 import re
 import urllib
@@ -204,25 +203,32 @@ def fanyi(f,t,info):
 
 # 查询战绩
 def lol(sn,pn):
+
+    print(sn)
+    print(pn)
     msg = ""
     try:
-        d = {'serverName': sn, 'playerName': pn}  # 发送一次请求。获取图灵的回复。
+        d = {'serverName': sn, 'playerName': pn}  # 发送一次请求。
         f = urllib.urlopen(" http://lolbox.duowan.com/playerDetail.php?" + urllib.urlencode(d))
         content = f.read()
+        print(u'发送请求成功')
         if content:
-            # print(content)
+            print(content)
             # 提取等级 战斗力 被赞 被拉黑。
             # pattern = re.compile('<em><span title=.*?>(.*?)</span></em>');
             pattern = re.compile('<div class="intro">.*?<em>(.*?)</em>.*?<div title.*?>(.*?)</div>.*?<div title.*?>(.*?)</div>.*?<em><span title=.*?>(.*?)</span></em>.*?</div>',re.S);
             result = re.findall(pattern,content)
+            print(result)
             if result:
                 print(result[0])
                 for item in result[0]:
                     print(item)
                     #filter(str.isdigit, '123ab45')
+                # msg = "%s(%s)英雄联盟信息:等级%s,战斗力%s,被赞次数%s,被拉黑%s" % (pn,sn,result[0][0],result[0][3],filter(str.isdigit,result[0][1]),filter(str.isdigit,result[0][2]))
                 msg = "%s(%s)英雄联盟信息:等级%s,战斗力%s,被赞次数%s,被拉黑%s" % (pn,sn,result[0][0],result[0][3],filter(str.isdigit,result[0][1]),filter(str.isdigit,result[0][2]))
                 print(msg)
-        return "查询的结果:" + msg
+                print(u"查询的结果")
+        return u"查询的结果 "+  msg.decode("utf-8")
     except Exception, e:
         print(e)
         return u"不好意思，查询没有那么快"
@@ -250,7 +256,7 @@ def lollist(pn):
                     lolliststr = lolliststr + "【"+item+"】"
                 msg = "找到"+str(len(result[0]))+"条记录:" + lolliststr
                 print(msg)
-        return "查询的结果:" + msg
+        return u"查询的结果:" + msg.decode("utf-8")
     except Exception, e:
         print(e)
     return u"不好意思，查询没有那么快"
@@ -303,6 +309,8 @@ def main():
             else:
                 continue
             # 解析信息。进行处理。
+            # 过滤一次空格再进入处理
+            msg = msg.replace(' ', '')
 
             # 翻译指令。
             if msg.startswith(u"中英"):
@@ -313,54 +321,64 @@ def main():
                 print(msg)
 
             elif msg.startswith(u"英中"):
-                msg = msg.replace(u'英中',' ')
+                msg = msg.replace(u'英中','')
                 print(u"待翻译的信息:"+msg)
                 msg = fanyi('en','zh',msg.encode('utf-8'))
 
             elif msg.startswith(u"中日"):
-                msg = msg.replace(u'中日',' ')
+                msg = msg.replace(u'中日','')
                 print(u"待翻译的信息:"+msg)
                 msg = fanyi('zh','jp',msg.encode('utf-8'))
 
             elif msg.startswith(u"日中"):
-                msg = msg.replace(u'日中',' ')
+                msg = msg.replace(u'日中','')
                 print(u"待翻译的信息:"+msg)
                 msg = fanyi('jp','zh',msg.encode('utf-8'))
 
             elif msg.startswith(u"中韩"):
-                msg = msg.replace(u'中韩',' ')
+                msg = msg.replace(u'中韩','')
                 print(u"待翻译的信息:"+msg)
                 msg = fanyi('zh','kor',msg.encode('utf-8'))
 
             elif msg.startswith(u"中法"):
-                msg = msg.replace(u'中法',' ')
+                msg = msg.replace(u'中法','')
                 print(u"待翻译的信息:"+msg)
                 msg = fanyi('zh','fra',msg.encode('utf-8'))
 
             elif msg.startswith(u"白古"):
-                msg = msg.replace(u'白古',' ')
+                msg = msg.replace(u'白古','')
                 print(u"待翻译的信息:"+msg)
                 msg = fanyi('zh','wyw',msg.encode('utf-8'))
 
 
             elif msg.startswith(u"古白"):
-                msg = msg.replace(u'古白',' ')
+                msg = msg.replace(u'古白','')
                 print(u"待翻译的信息:"+msg)
                 msg = fanyi('wyw','zh',msg.encode('utf-8'))
 
             elif msg.startswith(u"lollist"):
-                msg = msg.replace(u'lollist',' ')
+                msg = msg.replace(u'lollist','')
                 print(u"待查询的信息:"+msg)
-                msg = lollist(msg.encode('utf-8'))
+
+                if msg.split() == "":
+                    msg = u"需要查询大区，请以lollist开头,如lollisthiphp"
+                else:
+                    msg = lollist(msg.encode('utf-8'))
+
+
                 print(msg)
                 # msg = msg.encode("utf8","ignore")
 
             elif msg.startswith(u"lol"):
-                msg = msg.replace(u'lol',' ')
+                msg = msg.replace(u'lol','')
                 print(u"待查询的信息:"+msg)
                 # 分割字符串。
                 msginfo = msg.split("#")
-                msg = lol(msginfo[0].encode('utf-8'),msginfo[1].encode('utf-8'))
+                # 判断是否有2个。没有则表示问题
+                if len(msginfo) ==2:
+                    msg = lol(msginfo[0].encode('utf-8'),msginfo[1].encode('utf-8'))
+                else:
+                    msg=u"查询具体战斗力,请lol开头，例如lol皮城警备#hiphp"
                 # msg = msg.encode("utf8","ignore")
 
             # 进入图灵的指令
@@ -382,10 +400,10 @@ if __name__ == '__main__':
     # msg = fanyi('en','zh',"中国")
     # print(msg)
 
-    # msg = "皮城警备#hiphp"
-    # msginfo = msg.split("#")
-    # msg = lol(msginfo[0],msginfo[1])
-    # print(msg)
+    msg = "皮城警备#hiphp"
+    msginfo = msg.split("#")
+    msg = lol(msginfo[0],msginfo[1])
+    print(msg)
 
     # msg = "hiphp"
     # msg = lollist(msg)
